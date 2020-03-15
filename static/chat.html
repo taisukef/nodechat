@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="format-detection" content="telephone=no"/>
+<link rel="apple-touch-icon" href="logo.png"/>
+<meta property="og:image" content="logo.png"/>
+<title>Nodeでチャット！</title>
+<script>'use strict'
+
+window.onload = function() {
+	const fetchJSON = async function(path) {
+		return await (await fetch(path)).json()
+	}
+	const show = function(data) {
+		console.log("show", data)
+		let s = ""
+		for (let i = 0; i < data.length; i++) {
+			const d = data[i]
+			s += `<div><span>${d.ts}: </span><span>${d.text}</span></div>\n`
+		}
+		list.innerHTML = s
+	}
+	const update = async function() {
+		const data = await fetchJSON('/api/list')
+		show(data)
+		setTimeout(update, 3000)
+	}
+	update()
+	
+	send.onclick = async function() {
+		const text = encodeURIComponent(nickname.value + ": " + chat.value)
+		const ts = Date.now()
+		show(await fetchJSON(`/api/add?text=${text}&ts=${ts}`))
+		chat.value = ""
+	}
+	remove.onclick = async function() {
+		show(await fetchJSON('/api/remove?idx=0'))
+	}
+	removeall.onclick = async function() {
+		show(await fetchJSON('/api/clear'))
+	}
+}
+
+</script>
+<style>
+body {
+	background-color: #2F6D1C;
+	color: white;
+}
+</style>
+</head><body>
+
+<h1>Nodeでチャット！</h1>
+<div id="main">
+	<input type="text" id="nickname" placeholder="名前いれて">
+	<input type="text" id="chat" placeholder="発言いれて">
+	<button id="send">発言！</button>
+	<div id="list"></div>
+	<button id="remove">一番上、ひとつ消す</button>
+	<button id="removeall">全部消す！</button>
+</div>
+
+</body></html>
